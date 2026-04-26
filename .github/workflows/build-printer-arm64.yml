@@ -20,7 +20,7 @@ jobs:
         uses: uraimo/run-on-arch-action@v2
         with:
           arch: aarch64
-          distro: ubuntu24.04
+          distro: ubuntu22.04
           githubToken: ${{ github.token }}
           install: |
             apt-get update
@@ -44,3 +44,4 @@ jobs:
           name: printer-arm64
           path: ${{ github.workspace }}/printer-arm64
           if-no-files-found: error
+
