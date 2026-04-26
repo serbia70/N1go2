@@ -1,0 +1,46 @@
+name: Build printer-arm64
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-arm64:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build on linux/arm64
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: aarch64
+          distro: ubuntu24.04
+          githubToken: ${{ github.token }}
+          install: |
+            apt-get update
+            apt-get install -y curl ca-certificates gcc pkg-config libusb-1.0-0-dev
+            curl -fsSL https://go.dev/dl/go1.24.2.linux-arm64.tar.gz -o /tmp/go1.24.2.linux-arm64.tar.gz
+            rm -rf /usr/local/go
+            tar -C /usr/local -xzf /tmp/go1.24.2.linux-arm64.tar.gz
+          run: |
+            export PATH=/usr/local/go/bin:$PATH
+            go version
+            cd /github/workspace
+            go mod tidy
+            go test ./...
+            go build -o printer-arm64 .
+            chmod +x printer-arm64
+            file printer-arm64
+
+      - name: Upload printer-arm64 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: printer-arm64
+          path: ${{ github.workspace }}/printer-arm64
+          if-no-files-found: error

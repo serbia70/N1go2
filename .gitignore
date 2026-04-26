@@ -1,0 +1,13 @@
+# Local runtime config
+config.json
+
+# Build artifacts
+printer-arm64
+printer-n1.exe
+*.exe
+*.out
+*.test
+
+# Go coverage / cache outputs
+coverage.out
+coverage.txt

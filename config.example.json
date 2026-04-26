@@ -1,0 +1,13 @@
+{
+  "config_sync_base_url": "https://food2api.serbia70.com",
+  "mqtt_broker": "mqtt.serbia70.com",
+  "mqtt_port": 443,
+  "mqtt_username": "CHANGE_ME",
+  "mqtt_password": "CHANGE_ME",
+  "shop_slug": "CHANGE_ME",
+  "mqtt_secret": "",
+  "mqtt_order_topic": "",
+  "printer_vendor": 1155,
+  "printer_product": 1803,
+  "max_retries": 10
+}
