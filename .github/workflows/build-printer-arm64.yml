@@ -2,9 +2,7 @@ name: Build printer-arm64
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [ main, master ]
   pull_request:
   workflow_dispatch:
 
@@ -23,29 +21,24 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+          # 【关键优化 1】确保开启了完整的缓存逻辑
+          # setup-go 会自动处理 GOMODCACHE 和 GOCACHE
+          cache: true 
 
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            pkg-config \
-            file \
-            gcc \
-            libusb-1.0-0-dev
+          sudo apt-get install -y pkg-config file gcc libusb-1.0-0-dev
 
-      - name: Download Go modules
+      # 【优化点 2】去掉手动 go mod download
+      # setup-go 配合 cache: true 已经处理好了。手动写反而可能干扰缓存键的生成。
+
+      - name: Run tests
         env:
           GOPROXY: https://proxy.golang.org,direct
           GOSUMDB: sum.golang.org
         run: |
-          go version
-          go mod download
-
-      - name: Run tests on host
-        env:
-          GOPROXY: https://proxy.golang.org,direct
-          GOSUMDB: sum.golang.org
-        run: |
+          # 测试也会利用缓存，如果代码没变，测试会瞬间完成
           go test ./...
 
       - name: Build linux/arm64 binary
@@ -54,7 +47,9 @@ jobs:
           GOSUMDB: sum.golang.org
           CGO_ENABLED: "1"
         run: |
-          go build -v -o printer-arm64 .
+          # 【关键优化 3】使用 -ldflags 进行瘦身，减少 IO 压力
+          # 这里的 build 会自动检测 GOCACHE，如果依赖没变，只会编译你改动的代码
+          go build -v -ldflags="-s -w" -o printer-arm64 .
           chmod +x printer-arm64
           file printer-arm64
 
@@ -64,4 +59,3 @@ jobs:
           name: printer-arm64
           path: printer-arm64
           if-no-files-found: error
-
